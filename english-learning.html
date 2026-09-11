@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>四级单词运用</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --brand: #667eea; --brand2: #764ba2; --ink: #2f3542; --muted: #6b7280;
+    --line: #e5e7eb; --card: #ffffff; --mark: #ffe58f;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh; color: var(--ink); padding: 28px 18px 60px;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; }
+  header { color: #fff; text-align: center; margin: 8px 0 28px; }
+  header h1 { font-size: 1.9rem; font-weight: 800; letter-spacing: 1px; }
+  header p { margin-top: 8px; opacity: .92; font-size: .96rem; }
+  .grid { display: grid; grid-template-columns: 400px 1fr; gap: 22px; align-items: start; }
+  @media (max-width: 920px) { .grid { grid-template-columns: 1fr; } }
+  .card { background: var(--card); border-radius: 16px; padding: 22px; box-shadow: 0 18px 50px rgba(0,0,0,.18); }
+  .card h2 { font-size: 1.02rem; margin: 4px 0 12px; display: flex; align-items: center; gap: 8px; }
+  .card h2 + h2 { margin-top: 22px; border-top: 1px dashed var(--line); padding-top: 20px; }
+  label { display: block; font-size: .84rem; color: var(--muted); margin: 14px 0 6px; font-weight: 600; }
+  .drop {
+    border: 2px dashed #c9cde8; border-radius: 12px; padding: 22px; text-align: center;
+    cursor: pointer; color: var(--muted); font-size: .9rem; transition: .15s ease; background: #fafbff;
+  }
+  .drop:hover, .drop.drag { border-color: var(--brand); background: #f1f2ff; color: var(--ink); }
+  .drop b { display: block; font-size: 1rem; color: var(--ink); margin-bottom: 4px; }
+  textarea {
+    width: 100%; min-height: 96px; resize: vertical; border: 1px solid var(--line);
+    border-radius: 10px; padding: 12px; font-size: .92rem; font-family: inherit; line-height: 1.6;
+  }
+  textarea:focus, input:focus, select:focus { outline: 2px solid var(--brand); border-color: transparent; }
+  .hint { font-size: .76rem; color: var(--muted); margin-top: 6px; line-height: 1.6; }
+  .range-row { display: flex; align-items: center; gap: 12px; }
+  input[type=range] { flex: 1; accent-color: var(--brand); }
+  .range-val { min-width: 74px; text-align: center; font-weight: 700; color: var(--brand2); background: #f1f0fb; border-radius: 8px; padding: 4px 8px; font-size: .86rem; }
+  input[type=text], input[type=password], select {
+    width: 100%; padding: 9px 11px; border: 1px solid var(--line); border-radius: 8px; font-size: .88rem; font-family: inherit; background: #fff;
+  }
+  .btn {
+    width: 100%; margin-top: 20px; padding: 13px; border: none; border-radius: 12px;
+    background: linear-gradient(135deg, var(--brand), var(--brand2)); color: #fff;
+    font-size: 1rem; font-weight: 700; cursor: pointer; transition: transform .15s ease, opacity .15s ease;
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+  .btn-row { display: flex; gap: 10px; margin-top: 20px; }
+  .btn-row .btn { margin-top: 0; width: auto; flex: 1; }
+  .btn.stop { flex: 0 0 92px; background: #e5484d; }
+  .error { color: #d64545; font-size: .84rem; margin-top: 10px; min-height: 18px; white-space: pre-wrap; }
+  .output-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+  .output-head h2 { margin: 0; }
+  .mini-btn { border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 6px 12px; font-size: .8rem; cursor: pointer; color: var(--ink); }
+  .mini-btn:hover { background: #f3f4f6; }
+  .stats { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; }
+  .stat { background: #f1f0fb; border-radius: 10px; padding: 8px 12px; font-size: .8rem; color: var(--muted); }
+  .stat b { display: block; font-size: 1.02rem; color: var(--ink); }
+  .article-title { font-size: 1.25rem; margin: 4px 0 14px; }
+  .para { margin-bottom: 16px; }
+  .para-en { font-size: 1.05rem; line-height: 2.05; color: var(--ink); }
+  .para-zh {
+    margin-top: 8px; background: #f4f6ff; border-left: 3px solid var(--brand);
+    padding: 10px 14px; border-radius: 8px; font-size: .95rem; line-height: 1.8; color: #3b4252;
+  }
+  b.mem { font-weight: 800; }
+  .paren { color: #9a3412; font-size: .82em; background: #fff3e0; border-radius: 4px; padding: 0 3px; }
+  .gloss { color: #2563eb; cursor: pointer; border-bottom: 1px dashed #93c5fd; }
+  .gloss:hover { background: #eff6ff; border-radius: 3px; }
+  .gm {
+    display: inline-block; margin-left: 4px; cursor: pointer; font-size: .82em;
+    background: #ede9fe; border-radius: 6px; padding: 0 6px; color: #6d28d9; vertical-align: middle;
+  }
+  .gm:hover { background: #ddd6fe; }
+  .trans-btn {
+    margin-left: 8px; border: 1px solid var(--line); background: #fff; border-radius: 50%;
+    width: 26px; height: 26px; cursor: pointer; font-size: .78rem; color: var(--brand2); line-height: 1; vertical-align: middle;
+  }
+  .trans-btn:hover { background: #f1f0fb; }
+  .coverage { margin-top: 14px; font-size: .82rem; line-height: 1.7; }
+  .coverage .ok { color: #2e7d32; }
+  .coverage .miss { color: #d64545; font-weight: 700; }
+  .placeholder { color: var(--muted); text-align: center; padding: 50px 10px; font-size: .95rem; line-height: 1.8; }
+  #pop {
+    position: fixed; z-index: 999; display: none; max-width: 320px; background: #111827; color: #f9fafb;
+    padding: 9px 13px; border-radius: 10px; font-size: .9rem; line-height: 1.55; box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  }
+  #pop.big { max-width: 460px; background: #1e1b4b; }
+  #pop .pop-title { font-size: .78rem; opacity: .8; margin-bottom: 3px; }
+  .legend { font-size: .78rem; color: var(--muted); margin-top: 12px; line-height: 1.7; }
+  .legend i { font-style: normal; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>文章生成</h1>
+    <p>上传你背诵的单词 → 自动规划篇幅，生成一篇四级难度、有逻辑的英语文章，并标注词义、语法与段落翻译</p>
+  </header>
+
+  <div class="grid">
+    <div class="card">
+      <h2>① 上传背诵的单词</h2>
+      <div class="drop" id="drop">
+        <b>📎 点击或拖拽上传文件</b>
+        支持 PDF / Word(.docx) / TXT，自动提取其中的英文单词
+      </div>
+      <input type="file" id="fileInput" accept=".pdf,.docx,.doc,.txt,.md" hidden />
+
+      <label>已识别的单词（可手动增删）</label>
+      <textarea id="wordInput" placeholder="也可以直接在这里粘贴单词，用逗号/空格/换行分隔"></textarea>
+      <div class="hint">已识别 <span id="wordCount">0</span> 个单词</div>
+
+      <label>背诵词占比：<b id="pctVal">60%</b></label>
+      <div class="range-row">
+        <input type="range" id="pctSlider" min="50" max="80" value="60" step="1" />
+        <span class="range-val" id="pctBox">60%</span>
+      </div>
+      <div class="hint">从你上传的所有单词中选取的比例：例如上传 100 个词、选 60%，系统会固定选取 60 个目标词，并要求文章全部使用。</div>
+
+      <div class="hint" style="margin-top:14px">📏 文章长度：按上传单词数自动规划（当前预计约 <b id="lenEst">—</b> 词）。</div>
+
+      <h2>② AI 接口设置（生成所需）</h2>
+      <label>服务预设</label>
+      <select id="preset">
+        <option value="openai">OpenAI（gpt-4o-mini）</option>
+        <option value="deepseek">DeepSeek（deepseek-chat）</option>
+        <option value="deepseekv4pro">DeepSeek V4 Pro（deepseek-v4-pro）</option>
+        <option value="deepseekv4flash">DeepSeek V4 Flash（deepseek-v4-flash）</option>
+        <option value="qwen">通义千问（qwen-plus）</option>
+        <option value="custom">自定义</option>
+      </select>
+      <label>API Base URL</label>
+      <input type="text" id="aiBase" placeholder="https://api.openai.com/v1" />
+      <label>API Key</label>
+      <input type="password" id="aiKey" placeholder="sk-..." />
+      <label>模型名称</label>
+      <input type="text" id="aiModel" placeholder="gpt-4o-mini" />
+      <div class="hint">Key 仅保存在本机浏览器 localStorage，不会上传到别处。国内可使用 DeepSeek / 通义，价格低、中文解析质量好。</div>
+
+      <div class="btn-row">
+        <button class="btn" id="genBtn">生成文章</button>
+        <button class="btn stop" id="stopBtn" style="display:none">停止</button>
+      </div>
+      <div class="error" id="errMsg"></div>
+    </div>
+
+    <div class="card">
+      <div class="output-head">
+        <h2>③ 生成结果</h2>
+        <div class="tools">
+          <button class="mini-btn" id="copyBtn" disabled>复制全文</button>
+        </div>
+      </div>
+      <div id="resultArea">
+        <div class="placeholder">
+          上传单词并点击「生成文章」即可看到结果。<br>
+          <span style="font-size:.85rem">文中<b>粗体</b>＝你背过的词；蓝色下划虚线＝点击查词义；橙色括号＝超四级词的汉译；📘＝点击看语法解析；「译」＝段落翻译。</span>
+        </div>
+      </div>
+      <div class="legend" id="legend" style="display:none">
+        <i><b>粗体</b>：你背过的单词</i> ｜
+        <i><span class="gloss">蓝色下划线</span>：点击查汉译</i> ｜
+        <i><span class="paren">（汉译）</span>：超四级单词</i> ｜
+        <i><span class="gm">📘</span>：语法解析</i> ｜
+        <i><span class="trans-btn">译</span>：段落翻译</i>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="pop"></div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let stopFlag = false;
+
+// ---------- 极简功能词表（这些词不提供点击翻译） ----------
+const SIMPLE = new Set(("a,an,the,i,you,he,she,it,we,they,me,him,her,us,them,my,your,his,its,our,their,mine,yours,hers,ours,theirs,this,that,these,those,is,are,am,was,were,be,been,being,do,does,did,done,have,has,had,having,will,would,shall,should,can,could,may,might,must,of,to,in,on,at,for,and,or,but,nor,so,yet,with,by,from,as,than,then,not,no,yes,if,when,where,what,who,whom,whose,which,how,why,all,any,some,many,much,more,most,few,little,less,least,each,every,both,either,neither,one,two,three,four,five,six,seven,eight,nine,ten,up,down,out,over,under,again,there,here,now,just,only,also,too,very,about,before,after,between,because,while,since,until,through,during,against,without,within,into,onto,per,via,mr,mrs,ms,dr,etc,ok,okay").split(","));
+
+// ---------- 常见词兜底词典（AI 漏给词义时仍可点击查词） ----------
+const FALLBACK_DICT = {
+"ability":"能力","able":"能够的","accept":"接受","across":"穿过","act":"行动","action":"行动","add":"添加","afraid":"害怕的","afternoon":"下午","age":"年龄","ago":"以前","agree":"同意","air":"空气","almost":"几乎","alone":"独自","along":"沿着","already":"已经","always":"总是","animal":"动物","another":"另一个","answer":"回答","anyone":"任何人","anything":"任何事","appear":"出现","apple":"苹果","area":"地区","around":"周围","arrive":"到达","ask":"询问","attention":"注意","away":"离开","back":"后面","bad":"坏的","bag":"包","ball":"球","bank":"银行","beautiful":"美丽的","because":"因为","become":"变成","bed":"床","begin":"开始","believe":"相信","best":"最好的","better":"更好的","between":"之间","big":"大的","bird":"鸟","body":"身体","book":"书","both":"两者都","boy":"男孩","break":"打破","bring":"带来","brother":"兄弟","build":"建造","bus":"公共汽车","busy":"忙碌的","buy":"买","call":"打电话","car":"汽车","care":"关心","carry":"携带","catch":"抓住","change":"改变","child":"孩子","city":"城市","class":"班级","clean":"干净的","clear":"清楚的","close":"关闭","cold":"冷的","come":"来","common":"常见的","company":"公司","continue":"继续","country":"国家","day":"天","decide":"决定","different":"不同的","difficult":"困难的","dinner":"晚餐","doctor":"医生","door":"门","down":"向下","dream":"梦想","drink":"喝","drive":"驾驶","during":"在…期间","early":"早的","earth":"地球","easy":"容易的","eat":"吃","end":"结束","enjoy":"享受","enough":"足够的","even":"甚至","evening":"晚上","ever":"曾经","every":"每一个","example":"例子","exercise":"锻炼","eye":"眼睛","face":"脸","fact":"事实","family":"家庭","far":"远的","fast":"快的","father":"父亲","feel":"感觉","few":"很少","find":"找到","finish":"完成","fire":"火","first":"第一","fish":"鱼","food":"食物","foot":"脚","friend":"朋友","from":"从","front":"前面","full":"满的","game":"游戏","girl":"女孩","give":"给","glad":"高兴的","go":"去","good":"好的","great":"伟大的","group":"组","grow":"成长","hand":"手","happy":"快乐的","hard":"困难的","head":"头","hear":"听见","heart":"心","help":"帮助","high":"高的","history":"历史","home":"家","hope":"希望","hospital":"医院","hour":"小时","house":"房子","idea":"主意","important":"重要的","interest":"兴趣","job":"工作","keep":"保持","kind":"种类","know":"知道","large":"大的","last":"最后的","late":"迟的","learn":"学习","leave":"离开","left":"左边","life":"生活","light":"光","like":"喜欢","little":"小的","live":"生活","long":"长的","look":"看","love":"爱","make":"制作","man":"男人","many":"许多","market":"市场","mean":"意思是","meet":"遇见","member":"成员","money":"钱","month":"月","morning":"早晨","mother":"母亲","move":"移动","music":"音乐","name":"名字","near":"附近的","need":"需要","never":"从不","new":"新的","next":"下一个","nice":"好的","night":"夜晚","number":"数字","often":"经常","old":"旧的","open":"打开","other":"其他的","paper":"纸","parent":"父母","part":"部分","people":"人们","person":"人","place":"地方","plan":"计划","plant":"植物","play":"玩","point":"点","problem":"问题","put":"放","question":"问题","read":"读","real":"真实的","remember":"记得","right":"正确的","river":"河流","road":"路","room":"房间","run":"跑","say":"说","school":"学校","second":"第二","see":"看见","seem":"似乎","sell":"卖","send":"发送","several":"几个","short":"短的","show":"展示","side":"边","sing":"唱歌","sit":"坐","sleep":"睡觉","small":"小的","something":"某事","sometimes":"有时","soon":"很快","speak":"说话","stand":"站","start":"开始","stay":"停留","still":"仍然","stop":"停止","story":"故事","student":"学生","study":"学习","such":"这样的","take":"拿","talk":"谈话","teach":"教","teacher":"老师","tell":"告诉","thing":"事情","think":"想","time":"时间","today":"今天","together":"一起","tomorrow":"明天","too":"也","travel":"旅行","tree":"树","try":"尝试","turn":"转","understand":"理解","until":"直到","use":"使用","useful":"有用的","usually":"通常","very":"非常","visit":"参观","wait":"等待","walk":"走","want":"想要","watch":"观看","water":"水","way":"方法","week":"周","well":"好","word":"单词","work":"工作","world":"世界","write":"写","year":"年","young":"年轻的"
+};
+
+// ---------- 工具函数 ----------
+function escapeHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function normalize(s) { return String(s || '').trim().replace(/\s+/g, ' ').toLowerCase(); }
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+// 同一份词表和比例始终得到同一组选词，避免用户重试时目标词来回变化。
+function stableSelect(words, count, pct) {
+  const seedText = words.join('|') + '|' + pct;
+  let seed = 2166136261;
+  for (let i = 0; i < seedText.length; i++) {
+    seed ^= seedText.charCodeAt(i);
+    seed = Math.imul(seed, 16777619);
+  }
+  const ranked = words.map((word, index) => {
+    let hash = seed ^ index;
+    for (let i = 0; i < word.length; i++) hash = Math.imul(hash ^ word.charCodeAt(i), 16777619);
+    return { word, rank: hash >>> 0, index };
+  });
+  ranked.sort((a, b) => a.rank - b.rank || a.index - b.index);
+  return ranked.slice(0, count).map(item => item.word);
+}
+
+function parseWords(input) {
+  const words = input.toLowerCase().match(/[a-z]+(?:'[a-z]+)?/g) || [];
+  const out = [];
+  const seen = new Set();
+  for (const w of words) { if (w.length >= 2 && !seen.has(w)) { seen.add(w); out.push(w); } }
+  return out;
+}
+
+// 常见不规则动词/不规则变形的词形 -> 原形，避免“went/go、made/make”被误判为漏词
+const IRREGULAR = {
+  "am":"be","is":"be","are":"be","was":"be","were":"be","been":"be","being":"be",
+  "went":"go","gone":"go","has":"have","had":"have","does":"do","did":"do","done":"do",
+  "said":"say","made":"make","took":"take","taken":"take","thought":"think","saw":"see","seen":"see",
+  "gave":"give","given":"give","came":"come","got":"get","gotten":"get","knew":"know","known":"know",
+  "found":"find","felt":"feel","left":"leave","brought":"bring","bought":"buy","told":"tell",
+  "became":"become","began":"begin","begun":"begin","kept":"keep","held":"hold","wrote":"write","written":"write",
+  "stood":"stand","spoke":"speak","spoken":"speak","ran":"run","sat":"sit","read":"read","built":"build",
+  "lost":"lose","chose":"choose","chosen":"choose","paid":"pay","met":"meet","meant":"mean","spent":"spend",
+  "sent":"send","won":"win","taught":"teach","understood":"understand","grew":"grow","grown":"grow",
+  "drew":"draw","drawn":"draw","fell":"fall","fallen":"fall","flew":"fly","flown":"fly","drove":"drive","driven":"drive",
+  "ate":"eat","eaten":"eat","drank":"drink","drunk":"drink","slept":"sleep","wore":"wear","worn":"wear",
+  "sang":"sing","sung":"sing","swam":"swim","swum":"swim","threw":"throw","thrown":"throw","caught":"catch",
+  "fought":"fight","broke":"break","broken":"break","blew":"blow","blown":"blow","showed":"show","shown":"show",
+  "forgot":"forget","forgotten":"forget","heard":"hear","sold":"sell","tore":"tear","torn":"tear","woke":"wake","woken":"wake",
+  "rose":"rise","risen":"rise","rode":"ride","ridden":"ride","rang":"ring","rung":"ring","shook":"shake","shaken":"shake",
+  "shone":"shine","shot":"shoot","sank":"sink","sunk":"sink","stole":"steal","stolen":"steal","stuck":"stick",
+  "struck":"strike","swept":"sweep","swung":"swing","hurt":"hurt","cut":"cut","set":"set","hit":"hit","put":"put",
+  "cost":"cost","spread":"spread","let":"let","shut":"shut","bet":"bet","burst":"burst","quit":"quit",
+  "laid":"lay","hid":"hide","hidden":"hide","led":"lead","lent":"lend","froze":"freeze","frozen":"freeze",
+  "hung":"hang","bent":"bend","dug":"dig","fed":"feed","dealt":"deal","sought":"seek","swore":"swear","sworn":"swear",
+  "wept":"weep","wound":"wind","lit":"light","sank":"sink"
+};
+// 简单词形归一化：把复数/过去式/进行时等还原为词干，用于“是否用到了某个上传单词”的判定
+function normWord(w) {
+  w = String(w || '').toLowerCase();
+  if (IRREGULAR[w]) w = IRREGULAR[w];
+  if (w.length <= 3) return w;
+  if (w.endsWith('ies')) return w.slice(0, -3) + 'y';
+  if (w.endsWith('ied')) return w.slice(0, -3) + 'y';
+  if (w.endsWith('ing')) w = w.slice(0, -3);
+  else if (w.endsWith('ed')) w = w.slice(0, -2);
+  else if (w.endsWith('es')) w = w.slice(0, -2);
+  else if (w.endsWith('s') && !/(ss|us|is)$/.test(w)) w = w.slice(0, -1);
+  // 去掉双写辅音（running→run、stopped→stop），保留 see/tell/pass 这类
+  if (w.length >= 4 && w[w.length - 1] === w[w.length - 2] && !/(ee|oo|ll|ss|zz|ff)$/.test(w)) w = w.slice(0, -1);
+  // 去掉结尾不发音的 e（make→mak，与 making→mak 对齐）
+  if (w.length > 3 && w.endsWith('e') && !w.endsWith('ee')) w = w.slice(0, -1);
+  return w;
+}
+
+function estimateLength() {
+  const words = parseWords($('wordInput').value);
+  const pct = parseInt($('pctSlider').value, 10) || 60;
+  if (!words.length) { $('lenEst').textContent = '—'; return; }
+  const need = Math.max(1, Math.round(words.length * pct / 100));
+  $('lenEst').textContent = Math.min(5000, Math.max(200, need * 10));
+}
+
+// ---------- 文件解析 ----------
+function loadScript(src) {
+  return new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.onload = () => res();
+    s.onerror = () => rej(new Error('CDN 加载失败：' + src));
+    document.head.appendChild(s);
+  });
+}
+
+async function extractPdf(file) {
+  await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  const buf = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+  let text = '';
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const tc = await page.getTextContent();
+    text += tc.items.map(it => it.str).join(' ') + ' ';
+  }
+  return text;
+}
+
+async function extractDocx(file) {
+  await loadScript('https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js');
+  const buf = await file.arrayBuffer();
+  const res = await mammoth.extractRawText({ arrayBuffer: buf });
+  return res.value || '';
+}
+
+async function handleFile(file) {
+  if (!file) return;
+  const ext = (file.name.split('.').pop() || '').toLowerCase();
+  let text;
+  if (ext === 'pdf') text = await extractPdf(file);
+  else if (ext === 'docx') text = await extractDocx(file);
+  else if (ext === 'txt' || ext === 'md') text = await file.text();
+  else if (ext === 'doc') throw new Error('旧版 .doc 暂不支持，请用 Word 另存为 .docx 后再上传');
+  else throw new Error('请上传 PDF / .docx / .txt 文件');
+  return text;
+}
+
+// ---------- 渲染（词义标注 + 语法标记 + 段落翻译） ----------
+function splitSentences(text) {
+  return text.replace(/([.!?])\s+/g, '$1\n').split('\n').map(s => s.trim()).filter(Boolean);
+}
+
+function lookupGloss(lw, glossMap) {
+  if (glossMap.has(lw)) return glossMap.get(lw);
+  const tries = [lw];
+  if (lw.endsWith('ing') && lw.length > 5) { tries.push(lw.slice(0, -3), lw.slice(0, -3) + 'e'); }
+  if (lw.endsWith('ed') && lw.length > 4) { tries.push(lw.slice(0, -2), lw.slice(0, -1)); }
+  if (lw.endsWith('es') && lw.length > 4) { tries.push(lw.slice(0, -2)); }
+  else if (lw.endsWith('s') && lw.length > 3) { tries.push(lw.slice(0, -1)); }
+  if (lw.endsWith('ly') && lw.length > 4) { tries.push(lw.slice(0, -2)); }
+  for (const t of tries) { if (FALLBACK_DICT[t]) return { zh: FALLBACK_DICT[t], hard: false }; }
+  return null;
+}
+
+function annotateSentence(sentence, memSet, glossMap) {
+  sentence = String(sentence || '').replace(/[*_]+/g, '');
+  return sentence.replace(/[\p{L}]+(?:'[\p{L}]+)?/gu, (w) => {
+    const lw = w.toLowerCase();
+    const orig = escapeHtml(w);
+    if (memSet.has(normWord(lw))) return '<b class="mem">' + orig + '</b>';
+    if (SIMPLE.has(lw)) return orig;
+    const g = lookupGloss(lw, glossMap);
+    if (g) {
+      const zh = escapeHtml(g.zh);
+      if (g.hard) return orig + '<span class="paren">（' + zh + '）</span>';
+      return '<span class="gloss" data-zh="' + zh + '">' + orig + '</span>';
+    }
+    return orig;
+  });
+}
+
+function buildParagraphHtml(para, memSet) {
+  const glossMap = new Map();
+  (para.glossary || []).forEach(g => { if (g && g.word) glossMap.set(String(g.word).toLowerCase(), { zh: g.zh || '', hard: !!g.hard }); });
+
+  const grammarMap = new Map();
+  (para.grammar || []).forEach(g => { if (g && g.sentence) grammarMap.set(normalize(g.sentence), g.note || ''); });
+
+  const sentences = splitSentences(para.text || '');
+  const parts = sentences.map(s => {
+    let html = annotateSentence(s, memSet, glossMap);
+    const norm = normalize(s);
+    let note = grammarMap.get(norm);
+    if (!note) {
+      for (const [k, v] of grammarMap) {
+        if (norm.includes(k) || k.includes(norm)) { note = v; break; }
+      }
+    }
+    if (note) html += '<span class="gm" data-note="' + escapeHtml(note) + '" title="点击查看语法解析">📘</span>';
+    return html;
+  });
+
+  return {
+    enHtml: parts.join(' '),
+    translation: para.translation || ''
+  };
+}
+
+function renderResult(data, memSet, selected) {
+  const area = $('resultArea');
+  const paragraphs = Array.isArray(data.paragraphs) ? data.paragraphs : [];
+  const title = escapeHtml(data.title || '英语练习文章');
+  const memNorm = new Set([...memSet].map(normWord));
+
+  let enPlain = '';
+  const allText = [];
+  const paraBlocks = paragraphs.map(p => {
+    const h = buildParagraphHtml(p, memNorm);
+    enPlain += (p.text || '') + '\n';
+    allText.push(p.text || '');
+    return '<div class="para">' +
+      '<div class="para-en">' + h.enHtml + ' <button class="trans-btn" title="显示/隐藏段落翻译">译</button></div>' +
+      '<div class="para-zh" hidden>' + escapeHtml(h.translation) + '</div>' +
+      '</div>';
+  }).join('');
+
+  // 统计：以“本次选定的单词”为基准，目标全部用到
+  const full = allText.join('\n');
+  const presentTokens = new Set((full.match(/[\p{L}]+(?:'[\p{L}]+)?/gu) || []).map(t => normWord(t)));
+  const chosen = selected && selected.length ? selected : [...memSet];
+  const covered = [], missed = [];
+  for (const w of chosen) (presentTokens.has(normWord(w)) ? covered : missed).push(w);
+  const usedCount = covered.length;
+  const totalChosen = chosen.length;
+  const actualPct = totalChosen ? (usedCount / totalChosen) * 100 : 0;
+  const dev = Math.round(actualPct) - 100;
+  const articleWords = (full.match(/[\p{L}]+(?:'[\p{L}]+)?/gu) || []).length;
+  const totalUploaded = memSet.size;
+  const selectedPct = totalUploaded ? (totalChosen / totalUploaded) * 100 : 0;
+
+  let coverageHtml = '';
+  if (covered.length) coverageHtml += '<span class="ok">✅ 已用到的选定词（' + covered.length + '/' + totalChosen + '）：</span>' + covered.join(', ') + '<br>';
+  if (missed.length) coverageHtml += '<span class="miss">⚠️ 漏掉的选定词：</span>' + missed.join(', ');
+
+  area.innerHTML =
+    '<div class="stats">' +
+      '<div class="stat">上传单词<b>' + totalUploaded + '</b></div>' +
+      '<div class="stat">本次选定<b>' + totalChosen + ' 个</b></div>' +
+      '<div class="stat">已使用<b>' + usedCount + ' 个</b></div>' +
+      '<div class="stat">使用率<b>' + Math.round(selectedPct) + '%</b></div>' +
+      '<div class="stat">覆盖偏差<b>' + (dev > 0 ? '+' : '') + dev + '%</b></div>' +
+      '<div class="stat">文章词数<b>' + articleWords + '</b></div>' +
+      '<div class="stat">段落<b>' + paragraphs.length + '</b></div>' +
+    '</div>' +
+    '<h2 class="article-title">' + title + '</h2>' +
+    paraBlocks +
+    (coverageHtml ? '<div class="coverage">' + coverageHtml + '</div>' : '') +
+    (missed.length ? '<div class="coverage"><span class="miss">⚠️ 定向修订后仍漏了 ' + missed.length + ' 个选定词，可再次点击生成。</span></div>' : '');
+
+  $('legend').style.display = 'block';
+  $('copyBtn').disabled = false;
+}
+
+// ---------- AI 生成 ----------
+function extractJson(s) {
+  s = String(s || '').trim();
+  const fence = s.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  if (fence) s = fence[1].trim();
+  const a = s.indexOf('{');
+  const b = s.lastIndexOf('}');
+  if (a >= 0 && b > a) s = s.slice(a, b + 1);
+
+  try {
+    return JSON.parse(s);
+  } catch (e) {
+    const repaired = repairJson(s);
+    if (repaired !== s) {
+      try { return JSON.parse(repaired); } catch (e2) {}
+    }
+    throw new Error('AI 返回的 JSON 无法解析：' + (e.message || e));
+  }
+}
+
+function repairJson(s) {
+  let t = String(s || '');
+  // 去掉 } 或 ] 前多余的逗号（尾随逗号）
+  t = t.replace(/,\s*([}\]])/g, '$1');
+  // 补上 } 或 ] 后面缺失的逗号（相邻的数组/对象元素之间）
+  t = t.replace(/([}\]])\s*(?=[{\["0-9tfn-])/g, '$1,');
+  return t;
+}
+
+function splitZh(text) {
+  return String(text || '').split(/(?<=[。！？；])/).map(s => s.trim()).filter(Boolean);
+}
+
+// 兜底：若模型把全文塞进一段，按约 150 词/段强制拆分
+function ensureParagraphs(data) {
+  if (!data || !Array.isArray(data.paragraphs)) return data;
+  const result = [];
+  for (const p of data.paragraphs) {
+    const text = (p.text || '').trim();
+    const wc = text.split(/\s+/).filter(Boolean).length;
+    if (wc <= 220) { result.push(p); continue; }
+    const sentences = splitSentences(text);
+    const n = Math.max(1, Math.round(wc / 150));
+    const per = Math.max(1, Math.ceil(sentences.length / n));
+    const chunks = [];
+    for (let i = 0; i < sentences.length; i += per) chunks.push(sentences.slice(i, i + per).join(' '));
+    const zh = splitZh(p.translation || '');
+    const zhPer = Math.max(1, Math.ceil(zh.length / chunks.length));
+    const zhChunks = [];
+    for (let i = 0; i < zh.length; i += zhPer) zhChunks.push(zh.slice(i, i + zhPer).join(''));
+    chunks.forEach((chunkText, idx) => {
+      const grammar = (p.grammar || []).filter(g => {
+        if (!g || !g.sentence) return false;
+        return chunkText.indexOf(g.sentence) !== -1 || normalize(chunkText).indexOf(normalize(g.sentence)) !== -1;
+      });
+      result.push({
+        text: chunkText,
+        translation: zhChunks[idx] || (idx === 0 ? (p.translation || '') : ''),
+        grammar: grammar,
+        glossary: p.glossary || []
+      });
+    });
+  }
+  return Object.assign({}, data, { paragraphs: result });
+}
+async function generateAI(words, selectedWords, pct, targetLen, feedback, previousData) {
+  const base = ($('aiBase').value.trim() || 'https://api.openai.com/v1').replace(/\/+$/, '');
+  const key = $('aiKey').value.trim();
+  const model = $('aiModel').value.trim() || 'gpt-4o-mini';
+  if (!key) throw new Error('请先填写 API Key（可用 DeepSeek / 通义 / OpenAI）');
+
+  const paragraphCount = Math.max(2, Math.min(30, Math.ceil(targetLen / 150)));
+  const groups = Array.from({ length: paragraphCount }, () => []);
+  selectedWords.forEach((word, i) => groups[i % paragraphCount].push(word));
+  const checklist = groups.map((group, i) =>
+    'Paragraph ' + (i + 1) + ': ' + (group.length ? group.join(', ') : '(no assigned word)')
+  ).join('\n');
+  const revision = previousData ?
+    'Revise the existing JSON draft below instead of writing a new article from scratch. Preserve its title, story, paragraphs, translations, grammar and glossary as much as possible. Make the smallest natural edits needed to insert every missing word, then update only the affected translation/glossary/grammar entries.\n' +
+    'EXISTING DRAFT:\n' + JSON.stringify(previousData) + '\n\n' : '';
+  const prompt =
+    'You are an English teacher helping a Chinese student prepare for CET-4 (大学英语四级考试).\n' +
+    revision +
+    'Write ONE coherent, logically structured English article (clear beginning, middle, and end).\n\n' +
+    'Requirements:\n' +
+    '1. Total length: about ' + targetLen + ' words (±10%). Divide it into exactly ' + paragraphCount + ' paragraphs of roughly equal length. Every paragraph must be a SEPARATE entry in the "paragraphs" array, with its own "text" and "translation".\n' +
+    '2. Reading difficulty: within CET-4. Avoid words far beyond the CET-4 syllabus. If you must use a beyond-CET-4 word, mark it with "hard": true.\n' +
+    '3. WORD CHECKLIST (most important): you are given ' + selectedWords.length + ' words. Write the article and USE each of them at least once: ' + selectedWords.join(', ') + '. Use ONLY the most common everyday meaning of each word. Repetition of these words is normal and encouraged.\n' +
+    '4. Use this paragraph-by-paragraph checklist. Each assigned word must appear in its assigned paragraph (base form or a simple plural / past / gerund form is fine):\n' + checklist + '\n' +
+    '5. Before returning, check the article text mechanically against the full checklist. ALL selected words must appear.\n' +
+    '6. The article must be natural, logical, and suitable for an English learner. Use PLAIN TEXT only — do NOT use markdown formatting like ** or * or # anywhere in the text.\n' +
+    (feedback ? ('6. IMPORTANT correction for this rewrite: ' + feedback + '\n') : '') +
+    '\n' +
+    'Output ONLY a valid JSON object (no markdown fences, no extra text) with EXACTLY this structure:\n' +
+    '{\n' +
+    '  "title": "article title",\n' +
+    '  "paragraphs": [\n' +
+    '    {\n' +
+    '      "text": "One English paragraph.",\n' +
+    '      "translation": "该段落的中文翻译",\n' +
+    '      "grammar": [\n' +
+    '        {"sentence": "exact difficult sentence copied verbatim from the text", "note": "中文语法解析：句子结构、从句、主谓、时态、关键语法点"}\n' +
+    '      ],\n' +
+    '      "glossary": [\n' +
+    '        {"word": "exact word form as it appears in the text", "zh": "该语境下的中文释义", "hard": false}\n' +
+    '      ]\n' +
+    '    }\n' +
+    '  ]\n' +
+    '}\n\n' +
+    'Glossary rules:\n' +
+    '- For EVERY content word in each paragraph that is NOT in the memorized list and NOT a simple function word, add one glossary entry. Simple function words to SKIP: a, an, the, i, you, he, she, it, we, they, me, him, her, us, them, my, your, his, its, our, their, this, that, these, those, is, are, am, was, were, be, been, being, do, does, did, done, have, has, had, will, would, shall, should, can, could, may, might, must, of, to, in, on, at, for, and, or, but, nor, so, yet, with, by, from, as, than, then, not, no, if, when, where, what, who, which, how, why, all, any, some, many, much, more, most, few, little, less, each, every, both, either, neither, one, two, three, up, down, out, over, under, there, here, now, just, only, also, too, very, about, before, after, between, because, while, since.\n' +
+    '- "word" must be the EXACT inflected form as it appears in the text (e.g. "apples", "walked", "studying"), so the app can match it exactly.\n' +
+    '- "hard" is true only if the word is beyond the CET-4 vocabulary list; otherwise false.\n' +
+    '- If a memorized word appears, do NOT add it to glossary (the app will bold it).\n\n' +
+    'Grammar rules:\n' +
+    '- Pick 2 to 4 of the longest or most complex sentences across the WHOLE article.\n' +
+    '- For each, "sentence" must be the full sentence copied VERBATIM from the text, and "note" is a clear Chinese grammar analysis.\n' +
+    'Return only the JSON.';
+
+  const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key };
+  const baseBody = { model: model, messages: [{ role: 'user', content: prompt }], temperature: 0.7 };
+  const isDeepSeek = /deepseek/i.test(model);
+
+  async function post(extra) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 300000); // 5 分钟超时
+    try {
+      return await fetch(base + '/chat/completions', {
+        method: 'POST', headers: headers,
+        body: JSON.stringify(Object.assign({}, baseBody, extra)), signal: ctrl.signal
+      });
+    } catch (e) {
+      if (e && e.name === 'AbortError') throw new Error('请求超时（超过 5 分钟未返回），请重试或更换模型');
+      throw e;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  // DeepSeek V4 默认开启思考模式，会把 token 全耗在“思考”上导致正文为空；
+  // 这里显式关闭思考。遇到 400（接口不支持某参数）则逐步降级重试。
+  const attempts = isDeepSeek
+    ? [
+        { max_tokens: 65536, response_format: { type: 'json_object' }, thinking: { type: 'disabled' } },
+        { max_tokens: 65536, thinking: { type: 'disabled' } },
+        { max_tokens: 65536 },
+        {}
+      ]
+    : [
+        { max_tokens: 16384, response_format: { type: 'json_object' } },
+        { max_tokens: 16384 },
+        {}
+      ];
+  let resp = null;
+  for (const extra of attempts) {
+    resp = await post(extra);
+    if (resp.status !== 400) break;
+  }
+
+  if (!resp.ok) {
+    let detail = '';
+    try { detail = (await resp.text()).slice(0, 400); } catch (e) {}
+    throw new Error('AI 请求失败（' + resp.status + '）：' + detail);
+  }
+  const d = await resp.json();
+  const msg = d.choices && d.choices[0] && d.choices[0].message;
+  let content = msg && msg.content;
+  if (typeof content !== 'string') {
+    content = Array.isArray(content) ? content.map(p => (p && p.text) || '').join('') : (content ? JSON.stringify(content) : '');
+  }
+  content = (content || '').trim();
+  if (!content) {
+    if (msg && msg.reasoning_content) {
+      throw new Error('AI 只返回了“思考过程”而没有正文（思考模式占满了额度），已自动重试。');
+    }
+    let snippet = '';
+    try { snippet = JSON.stringify(d).slice(0, 500); } catch (e) {}
+    throw new Error('AI 未返回内容。原始返回：' + snippet);
+  }
+  return ensureParagraphs(extractJson(content));
+}
+
+function computeCoverage(data, words) {
+  const texts = (data.paragraphs || []).map(p => p.text || '').join('\n');
+  const present = new Set((texts.match(/[\p{L}]+(?:'[\p{L}]+)?/gu) || []).map(t => normWord(t)));
+  let used = 0;
+  for (const w of words) if (present.has(normWord(w))) used++;
+  return { used: used, total: words.length, pct: words.length ? (used / words.length) * 100 : 0 };
+}
+
+function getPresentSet(data) {
+  return new Set(((data.paragraphs || []).map(p => p.text || '').join('\n').match(/[\p{L}]+(?:'[\p{L}]+)?/gu) || []).map(normWord));
+}
+
+async function generateWithRatio(words, selected, pct, targetLen) {
+  let data = null;
+  let lastFeedback = '';
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      const previousData = attempt > 1 ? data : null;
+      data = await generateAI(words, selected, pct, targetLen, lastFeedback, previousData);
+    } catch (err) {
+      const msg = err.message || String(err);
+      if (/JSON|Expected|Unexpected|无法解析|未返回内容|思考过程|reasoning|empty/i.test(msg)) {
+        lastFeedback = 'Your previous response was NOT valid JSON (' + msg.slice(0, 120) + '). Output ONLY strictly valid JSON: put a comma between every array element and every object member, and do NOT use trailing commas.';
+        if (attempt < 3) { $('errMsg').textContent = 'AI 返回的 JSON 格式有误，正在自动重试（' + attempt + '/2）…'; $('genBtn').textContent = '生成中…（第 ' + attempt + ' 次修订）'; continue; }
+      }
+      throw err;
+    }
+    const present = getPresentSet(data);
+    const missing = selected.filter(w => !present.has(normWord(w)));
+    if (stopFlag) return data;
+    if (missing.length === 0) return data;
+    const parts = [];
+    parts.push('MISSING words — you must add each of them at least once: ' + missing.join(', ') + '. That is ' + missing.length + ' words still missing.');
+    parts.push('Do not replace or remove any selected word that is already present in the draft. Keep the article length within ±10% of the target.');
+    lastFeedback = parts.join(' ');
+    if (attempt < 3) { $('errMsg').textContent = '还有 ' + missing.length + ' 个选定词未写入，正在定向修订（' + attempt + '/2）…'; $('genBtn').textContent = '生成中…（第 ' + attempt + ' 次修订）'; }
+  }
+  return data;
+}
+
+async function onGenerate() {
+  const words = parseWords($('wordInput').value);
+  const pct = parseInt($('pctSlider').value, 10);
+  $('errMsg').textContent = '';
+  stopFlag = false;
+  $('stopBtn').style.display = '';
+  $('stopBtn').disabled = false;
+  $('stopBtn').textContent = '停止';
+  if (!words.length) { $('errMsg').textContent = '请先上传文件或手动输入至少一个英文单词。'; return; }
+
+  const need = Math.max(1, Math.round(words.length * pct / 100));
+  const selected = stableSelect(words, need, pct);
+  const targetLen = Math.min(5000, Math.max(200, need * 10));
+
+  $('genBtn').disabled = true;
+  $('genBtn').textContent = '生成中…（长文 + 完整标注，约 1–3 分钟，请稍候）';
+  $('copyBtn').disabled = true;
+  try {
+    const data = await generateWithRatio(words, selected, pct, targetLen);
+    if (stopFlag) { $('errMsg').textContent = '已停止，显示第一次生成的文章。'; }
+    renderResult(data, new Set(words), selected);
+  } catch (err) {
+    $('errMsg').textContent = err.message || '生成失败，请重试。';
+  } finally {
+    $('stopBtn').style.display = 'none';
+    $('genBtn').disabled = false;
+    $('genBtn').textContent = '生成文章';
+  }
+}
+
+// ---------- 交互：点击查词 / 语法 / 段落翻译 ----------
+function showPop(el, text, big) {
+  const pop = $('pop');
+  pop.innerHTML = (big ? '<div class="pop-title">📘 语法解析</div>' : '') + text;
+  pop.className = big ? 'big' : '';
+  pop.style.display = 'block';
+  const r = el.getBoundingClientRect();
+  const pw = pop.offsetWidth, ph = pop.offsetHeight;
+  let left = r.left + r.width / 2 - pw / 2;
+  left = Math.max(8, Math.min(left, window.innerWidth - pw - 8));
+  let top = r.top - ph - 8;
+  if (top < 8) top = r.bottom + 8;
+  pop.style.left = left + 'px';
+  pop.style.top = top + 'px';
+}
+function hidePop() { $('pop').style.display = 'none'; }
+
+document.addEventListener('click', (e) => {
+  const tb = e.target.closest('.trans-btn');
+  if (tb) {
+    const zh = tb.parentElement.nextElementSibling;
+    if (zh) zh.hidden = !zh.hidden;
+    return;
+  }
+  const gm = e.target.closest('.gm');
+  if (gm) { showPop(gm, gm.dataset.note || '暂无解析', true); return; }
+  const gl = e.target.closest('.gloss');
+  if (gl) { showPop(gl, gl.dataset.zh || '暂无释义', false); return; }
+  hidePop();
+});
+document.addEventListener('scroll', hidePop, true);
+
+// ---------- 复制 ----------
+function copyText() {
+  const articleEl = document.querySelector('#resultArea .article-title');
+  if (!articleEl) return;
+  const area = $('resultArea');
+  const paras = [...area.querySelectorAll('.para')].map(p => {
+    const en = p.querySelector('.para-en').innerText.replace('译', '').trim();
+    const zh = p.querySelector('.para-zh').innerText.trim();
+    return en + '\n' + zh;
+  }).join('\n\n');
+  const title = articleEl.innerText;
+  const text = title + '\n\n' + paras;
+  const done = (ok) => {
+    const b = $('copyBtn'); b.textContent = ok ? '已复制 ✓' : '复制失败';
+    setTimeout(() => { b.textContent = '复制全文'; }, 1500);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => done(true)).catch(() => done(false));
+  } else {
+    const ta = document.createElement('textarea'); ta.value = text;
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); done(true); } catch (e) { done(false); }
+    document.body.removeChild(ta);
+  }
+}
+
+// ---------- 设置持久化与预设 ----------
+const PRESETS = {
+  openai:   { base: 'https://api.openai.com/v1', model: 'gpt-4o-mini' },
+  deepseek: { base: 'https://api.deepseek.com/v1', model: 'deepseek-chat' },
+  deepseekv4pro: { base: 'https://api.deepseek.com/v1', model: 'deepseek-v4-pro' },
+  deepseekv4flash: { base: 'https://api.deepseek.com/v1', model: 'deepseek-v4-flash' },
+  qwen:     { base: 'https://dashscope.aliyuncs.com/compatible-mode/v1', model: 'qwen-plus' },
+  custom:   { base: '', model: '' }
+};
+function saveSettings() {
+  localStorage.setItem('engArticleSettings', JSON.stringify({
+    preset: $('preset').value, base: $('aiBase').value, key: $('aiKey').value, model: $('aiModel').value
+  }));
+}
+function loadSettings() {
+  let s = {};
+  try { s = JSON.parse(localStorage.getItem('engArticleSettings') || '{}'); } catch (e) {}
+  $('preset').value = s.preset || 'openai';
+  $('aiBase').value = s.base || PRESETS.openai.base;
+  $('aiKey').value = s.key || '';
+  $('aiModel').value = s.model || PRESETS.openai.model;
+}
+
+// ---------- 事件绑定 ----------
+$('genBtn').addEventListener('click', onGenerate);
+$('stopBtn').addEventListener('click', () => { stopFlag = true; $('stopBtn').disabled = true; $('stopBtn').textContent = '停止中…'; });
+$('copyBtn').addEventListener('click', copyText);
+$('wordInput').addEventListener('input', () => { $('wordCount').textContent = parseWords($('wordInput').value).length; estimateLength(); });
+$('pctSlider').addEventListener('input', () => { $('pctVal').textContent = $('pctSlider').value + '%'; $('pctBox').textContent = $('pctSlider').value + '%'; estimateLength(); });
+
+
+$('preset').addEventListener('change', () => {
+  const p = PRESETS[$('preset').value];
+  if ($('preset').value !== 'custom') { $('aiBase').value = p.base; $('aiModel').value = p.model; }
+  saveSettings();
+});
+['aiBase', 'aiKey', 'aiModel'].forEach(id => $(id).addEventListener('input', saveSettings));
+
+// 文件上传
+const drop = $('drop');
+const fileInput = $('fileInput');
+drop.addEventListener('click', () => fileInput.click());
+drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('drag'); });
+drop.addEventListener('dragleave', () => drop.classList.remove('drag'));
+drop.addEventListener('drop', (e) => { e.preventDefault(); drop.classList.remove('drag'); onFile(e.dataTransfer.files[0]); });
+fileInput.addEventListener('change', () => onFile(fileInput.files[0]));
+
+async function onFile(file) {
+  if (!file) return;
+  $('errMsg').textContent = '';
+  drop.querySelector('b').textContent = '⏳ 正在解析 ' + file.name + ' …';
+  try {
+    const text = await handleFile(file);
+    const words = parseWords(text);
+    if (!words.length) throw new Error('未从文件中提取到英文单词，请检查文件内容或手动粘贴。');
+    $('wordInput').value = words.join(', ');
+    $('wordCount').textContent = words.length;
+    estimateLength();
+    drop.querySelector('b').textContent = '📎 点击或拖拽上传文件';
+    $('errMsg').textContent = '✅ 已从文件中提取 ' + words.length + ' 个单词，可手动增删后生成。';
+  } catch (err) {
+    drop.querySelector('b').textContent = '📎 点击或拖拽上传文件';
+    $('errMsg').textContent = err.message || '文件解析失败。';
+  }
+}
+
+// ---------- 初始化 ----------
+loadSettings();
+$('pctVal').textContent = $('pctSlider').value + '%';
+$('pctBox').textContent = $('pctSlider').value + '%';
+estimateLength();
+
+</script>
+</body>
+</html>
