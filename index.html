@@ -515,13 +515,13 @@ async function generateAI(words, selectedWords, pct, targetLen, feedback, previo
   const prompt =
     'You are an English teacher helping a Chinese student prepare for CET-4 (大学英语四级考试).\n' +
     revision +
-    'Write ONE coherent, logically structured English article (clear beginning, middle, and end).\n\n' +
+    'Write ONE engaging, coherent, logically structured English article with a clear beginning, development, and ending. Choose one concrete topic first and build the whole article around it. The article should feel like a carefully written CET-4 careful-reading passage, with a meaningful idea, examples or events, and smooth transitions.\n\n' +
     'Requirements:\n' +
     '1. Total length: about ' + targetLen + ' words (±10%). Divide it into exactly ' + paragraphCount + ' paragraphs of roughly equal length. Every paragraph must be a SEPARATE entry in the "paragraphs" array, with its own "text" and "translation".\n' +
-    '2. Reading difficulty: within CET-4. Avoid words far beyond the CET-4 syllabus. If you must use a beyond-CET-4 word, mark it with "hard": true.\n' +
-    '3. WORD CHECKLIST (most important): you are given ' + selectedWords.length + ' words. Write the article and USE each of them at least once: ' + selectedWords.join(', ') + '. Use ONLY the most common everyday meaning of each word. Repetition of these words is normal and encouraged.\n' +
-    '4. Use this paragraph-by-paragraph checklist. Each assigned word must appear in its assigned paragraph (base form or a simple plural / past / gerund form is fine):\n' + checklist + '\n' +
-    '5. Before returning, check the article text mechanically against the full checklist. ALL selected words must appear.\n' +
+    '2. Reading difficulty: match a CET-4 careful-reading passage: natural intermediate-to-upper-intermediate English, clear but not childish, with varied sentence patterns and precise common vocabulary. Avoid both elementary filler and specialist jargon. If any word is beyond the CET-4 vocabulary range, it MUST be marked with "hard": true in the glossary so the page can display its Chinese meaning in parentheses immediately after the word.\n' +
+    '3. WORD CHECKLIST: you are given ' + selectedWords.length + ' words. Use EVERY word at least once, using its most natural meaning and allowing a simple plural, past, or gerund form. Integrate words into real sentences and the article argument or story. Never put words into an unnatural list, never write a sentence whose only purpose is to contain a word, and do not sacrifice logic for keyword coverage.\n' +
+    '4. Suggested word distribution (not a rigid per-paragraph rule):\n' + checklist + '\n' +
+    '5. Before returning, check the article text mechanically against the full checklist. ALL selected words must appear, but the article must still read as one interesting, unified passage.\n' +
     '6. The article must be natural, logical, and suitable for an English learner. Use PLAIN TEXT only — do NOT use markdown formatting like ** or * or # anywhere in the text.\n' +
     (feedback ? ('6. IMPORTANT correction for this rewrite: ' + feedback + '\n') : '') +
     '\n' +
@@ -544,7 +544,7 @@ async function generateAI(words, selectedWords, pct, targetLen, feedback, previo
     'Glossary rules:\n' +
     '- For EVERY content word in each paragraph that is NOT in the memorized list and NOT a simple function word, add one glossary entry. Simple function words to SKIP: a, an, the, i, you, he, she, it, we, they, me, him, her, us, them, my, your, his, its, our, their, this, that, these, those, is, are, am, was, were, be, been, being, do, does, did, done, have, has, had, will, would, shall, should, can, could, may, might, must, of, to, in, on, at, for, and, or, but, nor, so, yet, with, by, from, as, than, then, not, no, if, when, where, what, who, which, how, why, all, any, some, many, much, more, most, few, little, less, each, every, both, either, neither, one, two, three, up, down, out, over, under, there, here, now, just, only, also, too, very, about, before, after, between, because, while, since.\n' +
     '- "word" must be the EXACT inflected form as it appears in the text (e.g. "apples", "walked", "studying"), so the app can match it exactly.\n' +
-    '- "hard" is true only if the word is beyond the CET-4 vocabulary list; otherwise false.\n' +
+    '- You must classify EVERY glossary entry. Set "hard": true for EVERY word that is beyond the CET-4 vocabulary list, including less common academic, literary, technical, or advanced words. Set it to false only for words that a CET-4 student is normally expected to know. If you are uncertain, set "hard": true so the learner receives a direct parenthetical Chinese translation.\n' +
     '- If a memorized word appears, do NOT add it to glossary (the app will bold it).\n\n' +
     'Grammar rules:\n' +
     '- Pick 2 to 4 of the longest or most complex sentences across the WHOLE article.\n' +
@@ -666,7 +666,8 @@ async function onGenerate() {
 
   const need = Math.max(1, Math.round(words.length * pct / 100));
   const selected = stableSelect(words, need, pct);
-  const targetLen = Math.min(5000, Math.max(200, need * 10));
+  // 文章需要足够的上下文来承载单词；短词表也至少生成一篇完整的阅读文章。
+  const targetLen = Math.min(1800, Math.max(900, need * 16));
 
   $('genBtn').disabled = true;
   $('genBtn').textContent = '生成中…（长文 + 完整标注，约 1–3 分钟，请稍候）';
